@@ -153,19 +153,40 @@ function setStatAnimated(id, val) {
 
 function updateDashboard() {
     const today = todayStr();
+
+    // ── ตัวเลขวันนี้ (มา/สาย/ลา/ขาด) ──
     const dayRecs = state.attendance[today] || [];
     const seen = {};
     dayRecs.forEach(r => { seen[r.student_id] = r.status; });
     let p = 0, l = 0, lv = 0, a = 0;
-    Object.values(seen).forEach(s => { if (s === 'present') p++; else if (s === 'late') l++; else if (s === 'leave') lv++; else if (s === 'absent') a++; });
+    Object.values(seen).forEach(s => {
+        if (s === 'present') p++;
+        else if (s === 'late') l++;
+        else if (s === 'leave') lv++;
+        else if (s === 'absent') a++;
+    });
     setStatAnimated('dash-present', p || '—');
     setStatAnimated('dash-late', l || '—');
     setStatAnimated('dash-leave', lv || '—');
     setStatAnimated('dash-absent', a || '—');
+
+    // ── จำนวนวันที่เช็คชื่อ ──
     const days = Object.keys(state.attendance).length;
     setText('dash-days', days > 0 ? days + ' วัน' : '—');
-    const total = p + l + lv + a;
-    setText('dash-rate', total > 0 ? Math.round(p / total * 100) + '%' : '—');
+
+    // ── อัตราเข้าเรียน = คำนวณจากทุกวัน ──
+    // นับทุกบันทึกในทุกวัน (เอา "present" ÷ ทั้งหมด)
+    let allP = 0, allTotal = 0;
+    Object.values(state.attendance).forEach(recs => {
+        const daySeen = {};
+        recs.forEach(r => { daySeen[r.student_id] = r.status; });
+        Object.values(daySeen).forEach(s => {
+            allTotal++;
+            if (s === 'present') allP++;
+        });
+    });
+    const rate = allTotal > 0 ? Math.round(allP / allTotal * 100) : null;
+    setText('dash-rate', rate !== null ? rate + '%' : '—');
 }
 
 // ===== CHECK-IN PAGE =====
@@ -239,7 +260,7 @@ function ciSet(sid, st, event) {
         ripple.className = 'ripple';
         const rect = btn.getBoundingClientRect();
         const size = Math.max(rect.width, rect.height) * 2;
-        ripple.style.cssText = `width:${size}px;height:${size}px;left:${(rect.width-size)/2}px;top:${(rect.height-size)/2}px`;
+        ripple.style.cssText = `width:${size}px;height:${size}px;left:${(rect.width - size) / 2}px;top:${(rect.height - size) / 2}px`;
         btn.appendChild(ripple);
         setTimeout(() => ripple.remove(), 600);
     }
@@ -316,15 +337,15 @@ async function saveCheckin() {
 // ===== ADD STUDENT — FIXED =====
 async function addStudent() {
     // อ่านค่าจาก input
-    const numEl   = document.getElementById('add-num');
-    const nameEl  = document.getElementById('add-name');
-    const clsEl   = document.getElementById('add-class');
-    const roomEl  = document.getElementById('add-room');
+    const numEl = document.getElementById('add-num');
+    const nameEl = document.getElementById('add-name');
+    const clsEl = document.getElementById('add-class');
+    const roomEl = document.getElementById('add-room');
 
-    const num  = numEl  ? numEl.value.trim()  : '';
+    const num = numEl ? numEl.value.trim() : '';
     const name = nameEl ? nameEl.value.trim() : '';
-    const cls  = clsEl  ? clsEl.value.trim()  : '';
-    const room = roomEl ? roomEl.value.trim()  : '';
+    const cls = clsEl ? clsEl.value.trim() : '';
+    const room = roomEl ? roomEl.value.trim() : '';
 
     // Validate
     if (!num || !name || !cls) {
@@ -358,9 +379,9 @@ async function addStudent() {
             state.students.push(student);
             updateBadge();
             // เคลียร์ฟอร์ม
-            if (numEl)  numEl.value  = '';
+            if (numEl) numEl.value = '';
             if (nameEl) nameEl.value = '';
-            if (clsEl)  clsEl.value  = '';
+            if (clsEl) clsEl.value = '';
             if (roomEl) roomEl.value = '';
             Swal.fire({
                 icon: 'success',
@@ -472,9 +493,9 @@ async function changeAttendance(studentId) {
 
     const statusOptions = [
         { value: 'present', label: 'มาเรียน', icon: 'check', color: 'var(--green)' },
-        { value: 'late',    label: 'มาสาย',   icon: 'clock', color: 'var(--yellow)' },
-        { value: 'leave',   label: 'ลา',       icon: 'file-alt', color: 'var(--cyan)' },
-        { value: 'absent',  label: 'ขาด',      icon: 'times',    color: 'var(--red)' },
+        { value: 'late', label: 'มาสาย', icon: 'clock', color: 'var(--yellow)' },
+        { value: 'leave', label: 'ลา', icon: 'file-alt', color: 'var(--cyan)' },
+        { value: 'absent', label: 'ขาด', icon: 'times', color: 'var(--red)' },
     ];
 
     let optionsHTML = statusOptions.map(opt => {
@@ -515,10 +536,12 @@ async function changeAttendance(studentId) {
 }
 
 async function saveStudentAttendance(studentId, date, status, student) {
-    Swal.fire({ title: 'กำลังบันทึก...', html: `<div class="loading-wrap">
+    Swal.fire({
+        title: 'กำลังบันทึก...', html: `<div class="loading-wrap">
               <div class="loading-ring"></div>
               <p class="loading-text">กรุณารอสักครู่</p>
-            </div>`, allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' } });
+            </div>`, allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+    });
     try {
         const rec = { student_id: studentId, status, name: student.name, class: student.class, number: student.number };
         const res = await gasRequest({ action: 'saveAttendance', date, studentId, records: JSON.stringify([rec]) });
@@ -544,10 +567,12 @@ async function clearStudentAttendance(studentId, date) {
         customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title', htmlContainer: 'custom-swal-html', confirmButton: 'custom-swal-confirm', cancelButton: 'custom-swal-cancel' }
     });
     if (!result.isConfirmed) return;
-    Swal.fire({ title: 'กำลังลบ...', html: `<div class="loading-wrap">
+    Swal.fire({
+        title: 'กำลังลบ...', html: `<div class="loading-wrap">
               <div class="loading-ring"></div>
               <p class="loading-text">กรุณารอสักครู่</p>
-            </div>`, allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' } });
+            </div>`, allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+    });
     try {
         const res = await gasRequest({ action: 'deleteAttendance', studentId, date });
         if (res && res.success) {
@@ -631,10 +656,12 @@ async function clearAllData() {
 
     if (!result.isConfirmed) return;
 
-    Swal.fire({ title: 'กำลังลบข้อมูล...', html: `<div class="loading-wrap">
+    Swal.fire({
+        title: 'กำลังลบข้อมูล...', html: `<div class="loading-wrap">
               <div class="loading-ring"></div>
               <p class="loading-text">กรุณารอสักครู่</p>
-            </div>`, allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' } });
+            </div>`, allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'custom-swal-popup', title: 'custom-swal-title' }
+    });
 
     try {
         const res = await gasRequest({ action: 'clearAllData' });
@@ -727,10 +754,10 @@ function renderChart() {
     });
 
     const datasets = [
-        { label: 'มา',   data: CLASSES.map(c => data.present[c] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.08)', tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
-        { label: 'สาย',  data: CLASSES.map(c => data.late[c]    || 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,.08)', tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
-        { label: 'ลา',   data: CLASSES.map(c => data.leave[c]   || 0), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.08)',  tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
-        { label: 'ขาด',  data: CLASSES.map(c => data.absent[c]  || 0), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)',  tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
+        { label: 'มา', data: CLASSES.map(c => data.present[c] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.08)', tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
+        { label: 'สาย', data: CLASSES.map(c => data.late[c] || 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,.08)', tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
+        { label: 'ลา', data: CLASSES.map(c => data.leave[c] || 0), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.08)', tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
+        { label: 'ขาด', data: CLASSES.map(c => data.absent[c] || 0), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)', tension: .4, pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5 },
     ];
 
     if (state.chart) { state.chart.destroy(); state.chart = null; }

@@ -1281,3 +1281,209 @@ i.fas, i.far, i.fab, i.fal, i.fad,
     padding: 2px 8px;
     margin-top: 2px;
 }
+
+/* ============================================
+   MOBILE RESPONSIVE FIXES (max-width: 480px)
+   ============================================ */
+@media (max-width: 480px) {
+
+    /* ── General ── */
+    .main {
+        padding: 12px 10px 60px;
+    }
+
+    .page-header h1 {
+        font-size: 16px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    /* ── Stat grid → 2 คอลัมน์เสมอ ── */
+    .stat-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .stat-card i {
+        font-size: 18px;
+    }
+
+    .stat-card strong {
+        font-size: 18px;
+    }
+
+    /* ── Dashboard clock ── */
+    .clk-time {
+        font-size: 20px;
+    }
+
+    .info-row {
+        gap: 4px;
+    }
+
+    .info-item strong {
+        font-size: 12px;
+    }
+
+    /* ── Check-in form ── */
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Add student form ── */
+    .form-row-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── Check-in rows ── */
+    .ci-card {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .ci-info {
+        flex: 0 0 100%;
+    }
+
+    .ci-btns {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+
+    .ci-btn {
+        width: auto;
+        padding: 8px 4px;
+        font-size: 10px;
+    }
+
+    /* ── Student list card ── */
+    .sl-card {
+        padding: 12px;
+    }
+
+    .sl-name {
+        font-size: 13px;
+    }
+
+    .sl-bottom {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sl-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+    }
+
+    /* ── Stats table ── */
+    .st-tbl {
+        font-size: 11px;
+    }
+
+    .st-tbl th, .st-tbl td {
+        padding: 7px 6px;
+    }
+
+    /* ── SweetAlert popup ── */
+    .custom-swal-popup {
+        padding: 20px 16px !important;
+        margin: 0 12px !important;
+        width: calc(100vw - 24px) !important;
+        max-width: 100% !important;
+    }
+
+    .custom-swal-title {
+        font-size: 16px !important;
+    }
+
+    .custom-swal-html {
+        font-size: 13px !important;
+    }
+
+    .custom-swal-confirm,
+    .custom-swal-cancel {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+
+    /* ── Delete popup ── */
+    .del-popup {
+        padding: 20px 16px 16px;
+    }
+
+    .del-icon-inner {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+    }
+
+    .del-icon-ring {
+        width: 56px;
+        height: 56px;
+        padding: 18px;
+    }
+
+    .del-title {
+        font-size: 17px;
+    }
+
+    .del-input {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    /* ── Search modal ── */
+    .modal-overlay {
+        padding: 48px 10px 10px;
+    }
+
+    .search-box {
+        border-radius: 12px;
+    }
+
+    /* ── Toast ── */
+    #toast-wrap {
+        bottom: 12px !important;
+        right: 10px !important;
+        width: calc(100vw - 20px) !important;
+    }
+
+    /* ── Card row wrap ── */
+    .card-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* ── Buttons full width ── */
+    .btn.full {
+        font-size: 13px;
+        padding: 12px;
+    }
+
+    /* ── Quick menu ── */
+    .qi-text strong {
+        font-size: 12px;
+    }
+
+    .qi-text span {
+        font-size: 10px;
+    }
+
+    /* ── Status options in popup ── */
+    .status-option {
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+}
